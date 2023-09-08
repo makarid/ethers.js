@@ -37,6 +37,7 @@ export type WebSocketCreator = () => WebSocketLike;
  *  third-party services charge additional fees for WebSocket endpoints.
  */
 export class WebSocketProvider extends SocketProvider {
+
     #connect: null | WebSocketCreator;
 
     #websocket: null | WebSocketLike;
@@ -45,7 +46,7 @@ export class WebSocketProvider extends SocketProvider {
         return this.#websocket;
     }
 
-    constructor(url: string | WebSocketLike | WebSocketCreator, network?: Networkish) {
+    constructor(url: string | WebSocketLike | WebSocketCreator | WebSocket, network?: Networkish) {
         super(network);
         if (typeof(url) === "string") {
             this.#connect = () => { return new _WebSocket(url); };
@@ -53,6 +54,9 @@ export class WebSocketProvider extends SocketProvider {
         } else if (typeof(url) === "function") {
             this.#connect = url;
             this.#websocket = url();
+        } else if(typeof(url) === _WebSocket) {
+            this.#connect = () => { return url; };
+            this.#websocket = this.#connect();
         } else {
             this.#connect = null;
             this.#websocket = url;
